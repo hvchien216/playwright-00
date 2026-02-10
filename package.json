@@ -1,0 +1,17 @@
+{
+  "name": "practice-playwright",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.4.1",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.2.2"
+  },
+  "scripts": {
+    "test": "playwright test"
+  }
+}
