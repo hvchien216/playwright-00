@@ -12,6 +12,7 @@
     "@types/node": "^25.2.2"
   },
   "scripts": {
-    "test": "playwright test"
+    "test": "playwright test",
+    "test:headed": "playwright test tests/shopping-flow.spec.ts --headed --project=chromium"
   }
 }
