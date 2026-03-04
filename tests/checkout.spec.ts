@@ -1,53 +1,31 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/checkout-fixtures';
 
 test.describe('Checkout', () => {
-  test.use({ baseURL: 'https://www.saucedemo.com' });
+  test('should show error when checkout info is incomplete', async ({ checkoutPage }) => {
+    await checkoutPage.continueButton.click();
 
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.locator('[data-test="username"]').fill('standard_user');
-    await page.locator('[data-test="password"]').fill('secret_sauce');
-    await page.locator('[data-test="login-button"]').click();
-    await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
-    await page.locator('[data-test="shopping-cart-link"]').click();
-    await page.locator('[data-test="checkout"]').click();
+    await expect(checkoutPage.errorMessage).toBeVisible();
+    await expect(checkoutPage.errorMessage).toContainText('First Name is required');
   });
 
-  test('should show error when checkout info is incomplete', async ({ page }) => {
-    await page.locator('[data-test="continue"]').click();
-
-    const error = page.locator('[data-test="error"]');
-    await expect(error).toBeVisible();
-    await expect(error).toContainText('First Name is required');
-  });
-
-  test('should proceed to checkout overview after filling info', async ({ page }) => {
-    await page.locator('[data-test="firstName"]').fill('John');
-    await page.locator('[data-test="lastName"]').fill('Doe');
-    await page.locator('[data-test="postalCode"]').fill('12345');
-    await page.locator('[data-test="continue"]').click();
+  test('should proceed to checkout overview after filling info', async ({ checkoutPage, page }) => {
+    await checkoutPage.fillInfo('John', 'Doe', '12345');
 
     await expect(page).toHaveURL(/checkout-step-two/);
   });
 
-  test('should display correct item in order summary', async ({ page }) => {
-    await page.locator('[data-test="firstName"]').fill('John');
-    await page.locator('[data-test="lastName"]').fill('Doe');
-    await page.locator('[data-test="postalCode"]').fill('12345');
-    await page.locator('[data-test="continue"]').click();
+  test('should display correct item in order summary', async ({ checkoutPage }) => {
+    await checkoutPage.fillInfo('John', 'Doe', '12345');
 
-    await expect(page.locator('[data-test="inventory-item-name"]')).toHaveText('Sauce Labs Backpack');
-    await expect(page.locator('[data-test="inventory-item-price"]')).toHaveText('$29.99');
+    await expect(checkoutPage.itemName).toHaveText('Sauce Labs Backpack');
+    await expect(checkoutPage.itemPrice).toHaveText('$29.99');
   });
 
-  test('should complete order and show confirmation', async ({ page }) => {
-    await page.locator('[data-test="firstName"]').fill('John');
-    await page.locator('[data-test="lastName"]').fill('Doe');
-    await page.locator('[data-test="postalCode"]').fill('12345');
-    await page.locator('[data-test="continue"]').click();
-    await page.locator('[data-test="finish"]').click();
+  test('should complete order and show confirmation', async ({ checkoutPage, page }) => {
+    await checkoutPage.fillInfo('John', 'Doe', '12345');
+    await checkoutPage.finish();
 
     await expect(page).toHaveURL(/checkout-complete/);
-    await expect(page.locator('[data-test="complete-header"]')).toHaveText('Thank you for your order!');
+    await expect(checkoutPage.completeHeader).toHaveText('Thank you for your order!');
   });
 });
