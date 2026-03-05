@@ -46,4 +46,14 @@ test.describe('Login', () => {
     await expect(page).toHaveURL('https://www.saucedemo.com/');
     await expect(page.locator('[data-test="login-button"]')).toBeVisible();
   });
+
+  test('should show error when wrong credentials', async ({ page }) => {
+    await page.locator('[data-test="username"]').fill('standard_user');
+    await page.locator('[data-test="password"]').fill('secret_sauce1');
+    await page.locator('[data-test="login-button"]').click();
+
+    const errorMsg = page.locator('[data-test="error"]');
+    await expect(errorMsg).toBeVisible();
+    await expect(errorMsg).toContainText('Username and password');
+  });
 });
