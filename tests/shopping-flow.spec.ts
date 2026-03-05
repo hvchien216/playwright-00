@@ -51,4 +51,33 @@ test.describe('Full Shopping Flow E2E', () => {
     await expect(page).toHaveURL(/checkout-complete/);
     await expect(checkoutPage.completeHeader).toHaveText('Thank you for your order!');
   });
+
+  test('should cancel checkout from order summary and return to cart', async ({ page }) => {
+    // 1. Login
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('standard_user', 'secret_sauce');
+
+    // 2. Add 2 items to cart
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.addToCart('sauce-labs-backpack');
+    await inventoryPage.addToCart('sauce-labs-bike-light');
+
+    // 3. Navigate to cart and proceed to checkout
+    await inventoryPage.goToCart();
+    const cartPage = new CartPage(page);
+    await cartPage.checkout();
+
+    // 4. Fill checkout info to reach order summary (step two)
+    const checkoutPage = new CheckoutPage(page);
+    await checkoutPage.fillInfo('Jane', 'Doe', '67890');
+    await expect(page).toHaveURL(/checkout-step-two/);
+
+    // 5. Cancel from order summary — saucedemo sends the user back to inventory
+    await checkoutPage.cancelButton.click();
+    await expect(page).toHaveURL(/inventory/);
+
+    // 6. Cart badge should still show 2 items (cart state preserved)
+    await expect(inventoryPage.cartBadge).toHaveText('2');
+  });
 });
